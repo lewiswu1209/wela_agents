@@ -5,6 +5,7 @@ from abc import abstractmethod
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Callable
 
 class Tool(ABC):
     def __init__(self, name: str, description: str, required: List[str], **properties: Any) -> None:
@@ -14,11 +15,11 @@ class Tool(ABC):
         self.required: List[str] = required
 
     @abstractmethod
-    def _invoke(self, **kwargs: Any) -> str:
+    def _invoke(self, callback: Callable = None, **kwargs: Any) -> str:
         pass
 
-    def run(self, **kwargs: Any) -> str:
-        result = self._invoke(**kwargs)
+    def run(self, callback: Callable = None, **kwargs: Any) -> str:
+        result = self._invoke(callback, **kwargs)
         return result if result else ""
 
     def to_tool_param(self) -> Dict[str, Any]:

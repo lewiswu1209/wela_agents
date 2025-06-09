@@ -42,7 +42,10 @@ class Toolkit(Dict[str, Tool]):
             self.__callback.before_tool_call(event)
 
         try:
-            result = tool.run(**arguments)
+            if self.__callback:
+                result = tool.run(self.__callback.update_progress, **arguments)
+            else:
+                result = tool.run(None, **arguments)
         except Exception as e:
             return f"Error: An error occurred while running the tool - {str(e)}"
 
