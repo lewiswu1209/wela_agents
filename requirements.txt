@@ -1,13 +1,11 @@
-addict
 torch
+addict
 openai
 pillow
 datasets<3.4.0
 curl_cffi
 modelscope
 simplejson
-trafilatura
 transformers
 qdrant_client
 sortedcontainers
-duckduckgo_search

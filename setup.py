@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
 	setup(
 		name = "wela_agents",
-		version = "0.0.5",
+		version = "0.0.6",
 		packages = find_packages(),
 		install_requires = requirements,
 		description="An agent framework for Wela",
@@ -20,5 +20,5 @@ if __name__ == "__main__":
 		author = "Lewis Wu",
 		author_email = "lewiswu1209@163.com",
 		license = "MIT",
-		url = "https://github.com/lewiswu1209/wela_agents"
+		url = "https://github.com/lewiswu1209/wela_agents.git"
 	)
