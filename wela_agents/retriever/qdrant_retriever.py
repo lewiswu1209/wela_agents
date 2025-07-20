@@ -35,10 +35,12 @@ class QdrantRetriever(Retriever):
             )
             for idx, document in enumerate(documents)
         ]
-        self.__client.upsert(
-            collection_name = self.retriever_key,
-            points = points
-        )
+        points_list = [points[i:i + 10] for i in range(0, len(points), 10)]
+        for points in points_list:
+            self.__client.upsert(
+                collection_name = self.retriever_key,
+                points = points
+            )
 
     def retrieve(self, retrieve: str) -> List[Document]:
         vector = [float(x) for x in text_embedding.embed([retrieve])[0]]
