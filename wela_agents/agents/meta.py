@@ -6,6 +6,7 @@ from typing import List
 from typing import Union
 from typing import Optional
 from typing import Generator
+from typing_extensions import Literal
 
 from wela_agents.memory.memory import Memory
 from wela_agents.toolkit.toolkit import Toolkit
@@ -28,12 +29,14 @@ class Meta(ConversationAgent):
         *,
         model: Model,
         prompt: str = default_prompt,
+        reasoning_effort: Optional[Literal["minimal", "low", "medium", "high"]] = None,
+        verbosity: Literal['low', 'medium', 'high'] | None = None,
+        max_completion_tokens: Optional[int] = None,
         memory: Memory = None,
         toolkit: Toolkit = None,
         retriever: Retriever = None,
         input_key: str = "__input__",
-        output_key: str = "__output__",
-        max_tokens: Optional[int] = None
+        output_key: str = "__output__"
     ) -> None:
         assert isinstance(model, OpenAIChat), "Unsupported model type"
 
@@ -51,12 +54,14 @@ class Meta(ConversationAgent):
         super().__init__(
             model = model,
             prompt_template = prompt_template,
+            reasoning_effort = reasoning_effort,
+            verbosity = verbosity,
+            max_completion_tokens = max_completion_tokens,
             toolkit = toolkit,
             memory = memory,
             retriever = retriever,
             input_key = input_key,
-            output_key = output_key,
-            max_tokens = max_tokens
+            output_key = output_key
         )
 
     def predict(self, **kwargs: Any) -> Union[Any, Generator[Any, None, None]]:

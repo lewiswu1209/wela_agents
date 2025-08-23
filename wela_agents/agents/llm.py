@@ -4,7 +4,7 @@ from typing import List
 from typing import Union
 from typing import Optional
 from typing import Generator
-from openai._types import NOT_GIVEN
+from typing_extensions import Literal
 
 from wela_agents.agents.agent import Agent
 from wela_agents.toolkit.toolkit import Toolkit
@@ -22,28 +22,32 @@ class LLMAgent(Agent):
         *,
         model: Model,
         prompt_template: PromptTemplate,
+        reasoning_effort: Optional[Literal["minimal", "low", "medium", "high"]] = None,
+        verbosity: Literal['low', 'medium', 'high'] | None = None,
+        max_completion_tokens: Optional[int] = None,
         stop: Union[Optional[str], List[str], None] = None,
+        response_format: str = None,
+        logprobs: Optional[int] = None,
+        top_logprobs: Optional[int] = None,
         toolkit: Toolkit = None,
         input_key: str = "__input__",
         output_key: str = "__output__",
-        max_loop: int = 5,
-        max_tokens: Optional[int] = None
+        max_loop: int = 5
     ) -> None:
         assert isinstance(model, OpenAIChat), "Unsupported model type"
 
         self.__model: Model = model
         self.__prompt_template: PromptTemplate = prompt_template
-        self.__stop: Union[Optional[str], List[str], None] = stop
+        self.__reasoning_effort: Optional[Literal["minimal", "low", "medium", "high"]] = reasoning_effort
+        self.__verbosity: Optional[Literal['low', 'medium', 'high']] = verbosity
+        self.__max_completion_tokens: int = max_completion_tokens
+        self.__stop: Optional[Union[str, List[str]]] = stop
+        self.__response_format: str = response_format
+        self.__logprobs: Optional[int] = logprobs
+        self.__top_logprobs: Optional[int] = top_logprobs
         self.__toolkit: Toolkit = toolkit
         super().__init__(input_key = input_key, output_key = output_key)
         self.__max_loop: int = max_loop
-        self.__max_tokens: int = max_tokens
-
-        if isinstance(self.__model, OpenAIChat):
-            if self.__stop is None:
-                self.__stop = NOT_GIVEN
-            if self.__max_tokens is None:
-                self.__max_tokens = NOT_GIVEN
 
     @property
     def model(self) -> Model:
@@ -61,14 +65,24 @@ class LLMAgent(Agent):
                     if i == self.__max_loop - 1 or not self.__toolkit:
                         response_message = self.__model.predict(
                             messages = messages,
+                            reasoning_effort=self.__reasoning_effort,
+                            verbosity=self.__verbosity,
+                            max_completion_tokens = self.__max_completion_tokens,
                             stop = self.__stop,
-                            max_tokens = self.__max_tokens
+                            response_format=self.__response_format,
+                            logprobs=self.__logprobs,
+                            top_logprobs=self.__top_logprobs
                         )[0]
                     else:
                         response_message = self.__model.predict(
                             messages = messages,
+                            reasoning_effort=self.__reasoning_effort,
+                            verbosity=self.__verbosity,
+                            max_completion_tokens = self.__max_completion_tokens,
                             stop = self.__stop,
-                            max_tokens = self.__max_tokens,
+                            response_format=self.__response_format,
+                            logprobs=self.__logprobs,
+                            top_logprobs=self.__top_logprobs,
                             tools = self.__toolkit.to_tools_param()
                         )[0]
                     if "tool_calls" in response_message:
@@ -92,14 +106,24 @@ class LLMAgent(Agent):
                         if i == self.__max_loop - 1 or not self.__toolkit:
                             response_message = self.__model.predict(
                                 messages = messages,
+                                reasoning_effort=self.__reasoning_effort,
+                                verbosity=self.__verbosity,
+                                max_completion_tokens = self.__max_completion_tokens,
                                 stop = self.__stop,
-                                max_tokens = self.__max_tokens
+                                response_format=self.__response_format,
+                                logprobs=self.__logprobs,
+                                top_logprobs=self.__top_logprobs
                             )
                         else:
                             response_message = self.__model.predict(
                                 messages = messages,
+                                reasoning_effort=self.__reasoning_effort,
+                                verbosity=self.__verbosity,
+                                max_completion_tokens = self.__max_completion_tokens,
                                 stop = self.__stop,
-                                max_tokens = self.__max_tokens,
+                                response_format=self.__response_format,
+                                logprobs=self.__logprobs,
+                                top_logprobs=self.__top_logprobs,
                                 tools = self.__toolkit.to_tools_param()
                             )
                         final_response_message = {"role": "assistant"}

@@ -3,6 +3,7 @@ from typing import Any
 from typing import Union
 from typing import Optional
 from typing import Generator
+from typing_extensions import Literal
 
 from wela_agents.agents.llm import LLMAgent
 from wela_agents.models.model import Model
@@ -18,24 +19,28 @@ class ConversationAgent(LLMAgent):
         *,
         model: Model,
         prompt_template: PromptTemplate,
+        reasoning_effort: Optional[Literal["minimal", "low", "medium", "high"]] = None,
+        verbosity: Literal['low', 'medium', 'high'] | None = None,
+        max_completion_tokens: Optional[int] = None,
         toolkit: Toolkit = None,
         memory: Memory = None,
         retriever: Retriever = None,
         input_key: str = "__input__",
         output_key: str = "__output__",
-        max_loop: int = 5,
-        max_tokens: Optional[int] = None
+        max_loop: int = 5
     ) -> None:
         assert isinstance(model, OpenAIChat), "Unsupported model type"
 
         super().__init__(
             model = model,
             prompt_template = prompt_template,
+            reasoning_effort = reasoning_effort,
+            verbosity = verbosity,
+            max_completion_tokens = max_completion_tokens,
             toolkit = toolkit,
             input_key = input_key,
             output_key = output_key,
-            max_loop = max_loop,
-            max_tokens = max_tokens
+            max_loop = max_loop
         )
         self.__memory: Memory = memory
         self.__retriever: Retriever = retriever
