@@ -6,6 +6,7 @@ from typing import Dict
 from typing import List
 
 from wela_agents.toolkit.tool import Tool
+from wela_agents.toolkit.tool_result import ToolResult
 from wela_agents.callback.event import ToolEvent
 from wela_agents.callback.callback import ToolCallback
 from wela_agents.schema.prompt.openai_chat import Function
@@ -23,17 +24,17 @@ class Toolkit(Dict[str, Tool]):
     def set_callback(self, callback: ToolCallback) -> None:
         self.__callback = callback
 
-    def run(self, function: Function) -> str:
+    def run(self, function: Function) -> ToolResult:
         tool_name = function.get("name")
         arguments_str = function.get("arguments")
 
         try:
             arguments = json.loads(arguments_str)
         except json.JSONDecodeError:
-            return "Error: Invalid JSON format for arguments."
+            return ToolResult(result="Error: Invalid JSON format for arguments.")
 
         if tool_name not in self:
-            return f"Error: Tool '{tool_name}' not found."
+            return ToolResult(result=f"Error: Tool '{tool_name}' not found.")
 
         tool = self[tool_name]
 
@@ -47,7 +48,7 @@ class Toolkit(Dict[str, Tool]):
             else:
                 result = tool.run(None, **arguments)
         except Exception as e:
-            return f"Error: An error occurred while running the tool - {str(e)}"
+            return ToolResult(result=f"Error: An error occurred while running the tool - {str(e)}")
 
         if self.__callback:
             event = ToolEvent(tool_name, arguments, result)

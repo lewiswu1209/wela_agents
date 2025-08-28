@@ -11,9 +11,12 @@ from wela_agents.toolkit.toolkit import Toolkit
 from wela_agents.models.model import Model
 from wela_agents.models.openai_chat import OpenAIChat
 from wela_agents.schema.prompt.openai_chat import Message
+from wela_agents.schema.prompt.openai_chat import ImageURL
 from wela_agents.schema.prompt.openai_chat import ToolCall
 from wela_agents.schema.prompt.openai_chat import Function
 from wela_agents.schema.prompt.openai_chat import ToolMessage
+from wela_agents.schema.prompt.openai_chat import UserMessage
+from wela_agents.schema.prompt.openai_chat import ImageContent
 from wela_agents.schema.template.prompt_template import PromptTemplate
 
 class LLMAgent(Agent):
@@ -92,11 +95,32 @@ class LLMAgent(Agent):
                             tool_result = self.__toolkit.run(tool_call["function"])
                             messages.append(
                                 ToolMessage(
-                                    content = tool_result,
+                                    content = tool_result["result"],
                                     role = "tool",
                                     tool_call_id = tool_call["id"]
                                 )
                             )
+                            if "attachment" in tool_result:
+                                for attachment in tool_result["attachment"]:
+                                    if attachment["type"] == "text":
+                                        messages.append(
+                                            UserMessage(
+                                                role="user",
+                                                content=attachment["content"]
+                                            )
+                                        )
+                                    elif attachment["type"] == "image_url":
+                                        messages.append(
+                                            UserMessage(
+                                                role="user",
+                                                content=[
+                                                    ImageContent(
+                                                        type="image_url",
+                                                        image_url=ImageURL(url=attachment["content"])
+                                                    )
+                                                ]
+                                            )
+                                        )
                     else:
                         break
                 return response_message
@@ -155,11 +179,32 @@ class LLMAgent(Agent):
                                 tool_result = self.__toolkit.run(tool_call["function"])
                                 messages.append(
                                     ToolMessage(
-                                        content = tool_result,
+                                        content = tool_result["result"],
                                         role = "tool",
                                         tool_call_id = tool_call["id"]
                                     )
                                 )
+                                if "attachment" in tool_result:
+                                    for attachment in tool_result["attachment"]:
+                                        if attachment["type"] == "text":
+                                            messages.append(
+                                                UserMessage(
+                                                    role="user",
+                                                    content=attachment["content"]
+                                                )
+                                            )
+                                        elif attachment["type"] == "image_url":
+                                            messages.append(
+                                                UserMessage(
+                                                    role="user",
+                                                    content=[
+                                                        ImageContent(
+                                                            type="image_url",
+                                                            image_url=ImageURL(url=attachment["content"])
+                                                        )
+                                                    ]
+                                                )
+                                            )
                 return stream()
 
 __all__ = [

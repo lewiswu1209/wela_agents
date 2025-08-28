@@ -7,6 +7,8 @@ from typing import Dict
 from typing import List
 from typing import Callable
 
+from wela_agents.toolkit.tool_result import ToolResult
+
 class Tool(ABC):
     def __init__(self, name: str, description: str, required: List[str], **properties: Any) -> None:
         self.name: str = name
@@ -15,12 +17,12 @@ class Tool(ABC):
         self.required: List[str] = required
 
     @abstractmethod
-    def _invoke(self, callback: Callable = None, **kwargs: Any) -> str:
+    def _invoke(self, callback: Callable = None, **kwargs: Any) -> ToolResult:
         pass
 
-    def run(self, callback: Callable = None, **kwargs: Any) -> str:
+    def run(self, callback: Callable = None, **kwargs: Any) -> ToolResult:
         result = self._invoke(callback, **kwargs)
-        return result if result else ""
+        return result
 
     def to_tool_param(self) -> Dict[str, Any]:
         return {

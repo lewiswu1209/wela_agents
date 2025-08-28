@@ -3,11 +3,14 @@ from abc import ABC
 from typing import Any
 from typing import Dict
 
+from wela_agents.toolkit.tool_result import ToolResult
+
 class Event(ABC):
     pass
 
 class ToolEvent(Event):
-    def __init__(self, tool_name: str, arguments: Dict[str, Any], result: str = None) -> None:
+
+    def __init__(self, tool_name: str, arguments: Dict[str, Any], result: ToolResult = None) -> None:
         super().__init__()
         self.__tool_name = tool_name
         self.__arguments = arguments
@@ -22,7 +25,7 @@ class ToolEvent(Event):
         return self.__arguments
 
     @property
-    def result(self) -> str:
+    def result(self) -> ToolResult:
         return self.__result
 
 __all__ = [
