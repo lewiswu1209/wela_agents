@@ -12,7 +12,7 @@ from qdrant_client.models import ExtendedPointId
 from qdrant_client.conversions.common_types import ScoredPoint
 
 from wela_agents.memory.memory import Memory
-from wela_agents.embedding.text_embedding import text_embedding
+from wela_agents.embedding.text_embedding import TextEmbedding
 from wela_agents.schema.prompt.openai_chat import Message
 
 def unique(scored_points: List[ScoredPoint]) -> List[ScoredPoint]:
@@ -32,12 +32,13 @@ def sort_key_score(scored_point: ScoredPoint) -> float:
     return scored_point.score
 
 class QdrantMemory(Memory[Message]):
-    def __init__(self, memory_key: str, qdrant_client: QdrantClient, limit: int=10, score_threshold: Optional[float] = None) -> None:
+    def __init__(self, memory_key: str, embedding: TextEmbedding, qdrant_client: QdrantClient, limit: int=10, score_threshold: Optional[float] = None) -> None:
         super().__init__(memory_key)
 
         self.__score_threshold: Optional[float] = score_threshold
         self.__limit: int = limit
         self.__client: QdrantClient = qdrant_client
+        self.__embedding = embedding
 
         if not self.__client.collection_exists(collection_name=self.memory_key):
             self.__client.create_collection(
@@ -57,7 +58,7 @@ class QdrantMemory(Memory[Message]):
             for content in context["content"]:
                 if content["type"] == "text":
                     sentences.append(content["text"])
-        sentences_embedding = text_embedding.embed(sentences)
+        sentences_embedding = self.__embedding.embed(sentences)
 
         count = self.__client.count(collection_name=self.memory_key).count
         points = [
@@ -75,7 +76,7 @@ class QdrantMemory(Memory[Message]):
         )
 
     def _get_points_by_sentence(self, sentence: str) -> List[ScoredPoint]:
-        sentence_embedding = text_embedding.embed([sentence])[0]
+        sentence_embedding = self.__embedding.embed([sentence])[0]
         vector = [float(x) for x in sentence_embedding]
         return self.__client.search(
             collection_name=self.memory_key,
