@@ -12,7 +12,7 @@ from qdrant_client.models import ExtendedPointId
 from qdrant_client.conversions.common_types import ScoredPoint
 
 from wela_agents.memory.memory import Memory
-from wela_agents.embedding.text_embedding import TextEmbedding
+from wela_agents.embedding.embedding import Embedding
 from wela_agents.schema.prompt.openai_chat import Message
 
 def unique(scored_points: List[ScoredPoint]) -> List[ScoredPoint]:
@@ -32,18 +32,19 @@ def sort_key_score(scored_point: ScoredPoint) -> float:
     return scored_point.score
 
 class QdrantMemory(Memory[Message]):
-    def __init__(self, memory_key: str, embedding: TextEmbedding, qdrant_client: QdrantClient, limit: int=10, score_threshold: Optional[float] = None) -> None:
+    def __init__(self, memory_key: str, embedding: Embedding, qdrant_client: QdrantClient, vector_size = 512,limit: int=10, score_threshold: Optional[float] = None) -> None:
         super().__init__(memory_key)
 
         self.__score_threshold: Optional[float] = score_threshold
         self.__limit: int = limit
         self.__client: QdrantClient = qdrant_client
         self.__embedding = embedding
+        self.__vector_size = vector_size
 
         if not self.__client.collection_exists(collection_name=self.memory_key):
             self.__client.create_collection(
                 collection_name=self.memory_key,
-                vectors_config=VectorParams(size=512, distance=Distance.COSINE)
+                vectors_config=VectorParams(size=self.__vector_size, distance=Distance.COSINE)
             )
 
     def save_context(self, context: Message) -> Any:
@@ -129,7 +130,7 @@ class QdrantMemory(Memory[Message]):
 
         self.__client.create_collection(
             collection_name=self.memory_key,
-            vectors_config=VectorParams(size=512, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=self.__vector_size, distance=Distance.COSINE),
         )
 
 __all__ = [

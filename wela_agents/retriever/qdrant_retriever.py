@@ -9,21 +9,21 @@ from qdrant_client.models import VectorParams
 
 from wela_agents.retriever.retriever import Retriever
 from wela_agents.schema.document.document import Document
-from wela_agents.embedding.text_embedding import TextEmbedding
+from wela_agents.embedding.embedding import Embedding
 
 class QdrantRetriever(Retriever):
 
-    def __init__(self, retriever_key: str, embedding: TextEmbedding, qdrant_client: QdrantClient, limit: int=10, score_threshold: Optional[float] = None) -> None:
+    def __init__(self, retriever_key: str, embedding: Embedding, qdrant_client: QdrantClient, vector_size = 512, limit: int=10, score_threshold: Optional[float] = None) -> None:
         Retriever.__init__(self, retriever_key)
         self.__client: QdrantClient = qdrant_client
         self.__score_threshold: Optional[float] = score_threshold
         self.__limit: int = limit
-        self.__embedding: TextEmbedding = embedding
+        self.__embedding: Embedding = embedding
 
         if not self.__client.collection_exists(collection_name=self.retriever_key):
             self.__client.create_collection(
                 collection_name = self.retriever_key,
-                vectors_config = VectorParams(size=512, distance = Distance.COSINE)
+                vectors_config = VectorParams(size=vector_size, distance = Distance.COSINE)
             )
 
     def add_documents(self, documents: List[Document]) -> None:
