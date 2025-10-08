@@ -162,11 +162,14 @@ class LLMAgent(Agent):
                                 if "tool_calls" not in final_response_message:
                                     final_response_message["tool_calls"] = [ToolCall() for _ in range(len(delta_message["tool_calls"]))]
                                 for index in range(len(delta_message["tool_calls"])):
-                                    final_response_message["tool_calls"][index]["id"] = delta_message["tool_calls"][index]["id"] if "id" in delta_message["tool_calls"][index] else final_response_message["tool_calls"][index]["id"]
-                                    final_response_message["tool_calls"][index]["type"] = delta_message["tool_calls"][index]["type"] if "type" in delta_message["tool_calls"][index] else final_response_message["tool_calls"][index]["type"]
+                                    if not final_response_message["tool_calls"][index].get("id", None) and "id" in delta_message["tool_calls"][index]:
+                                        final_response_message["tool_calls"][index]["id"] = delta_message["tool_calls"][index]["id"]
+                                    if not final_response_message["tool_calls"][index].get("type", None) and "type" in delta_message["tool_calls"][index]:
+                                        final_response_message["tool_calls"][index]["type"] = delta_message["tool_calls"][index]["type"]
                                     if "function" not in final_response_message["tool_calls"][index]:
                                         final_response_message["tool_calls"][index]["function"] = Function(arguments="")
-                                    final_response_message["tool_calls"][index]["function"]["name"] = delta_message["tool_calls"][index]["function"]["name"] if "name" in delta_message["tool_calls"][index]["function"] else final_response_message["tool_calls"][index]["function"]["name"]
+                                    if not final_response_message["tool_calls"][index]["function"].get("name", None) and "name" in delta_message["tool_calls"][index]["function"]:
+                                        final_response_message["tool_calls"][index]["function"]["name"] = delta_message["tool_calls"][index]["function"]["name"]
                                     if "arguments" in delta_message["tool_calls"][index]["function"]:
                                         final_response_message["tool_calls"][index]["function"]["arguments"] += delta_message["tool_calls"][index]["function"]["arguments"]
                             else:
