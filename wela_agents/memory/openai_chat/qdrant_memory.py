@@ -57,34 +57,38 @@ class QdrantMemory(Memory[Message]):
         else:
             sentences = []
             for content in context["content"]:
-                if content["type"] == "text":
+                if content["type"] == "text" and content["text"]:
                     sentences.append(content["text"])
-        sentences_embedding = self.__embedding.embed(sentences)
+        if sentences:
+            sentences_embedding = self.__embedding.embed(sentences)
 
-        count = self.__client.count(collection_name=self.memory_key).count
-        points = [
-            PointStruct(
-                id = count + idx,
-                vector = [float(x) for x in sentence_embedding],
-                payload = payload
+            count = self.__client.count(collection_name=self.memory_key).count
+            points = [
+                PointStruct(
+                    id = count + idx,
+                    vector = [float(x) for x in sentence_embedding],
+                    payload = payload
+                )
+                for idx, sentence_embedding in enumerate(sentences_embedding)
+            ]
+
+            self.__client.upsert(
+                collection_name=self.memory_key,
+                points=points
             )
-            for idx, sentence_embedding in enumerate(sentences_embedding)
-        ]
-
-        self.__client.upsert(
-            collection_name=self.memory_key,
-            points=points
-        )
 
     def _get_points_by_sentence(self, sentence: str) -> List[ScoredPoint]:
-        sentence_embedding = self.__embedding.embed([sentence])[0]
-        vector = [float(x) for x in sentence_embedding]
-        return self.__client.search(
-            collection_name=self.memory_key,
-            query_vector=vector,
-            limit=self.__limit,
-            score_threshold = self.__score_threshold,
-        )
+        if sentence:
+            sentence_embedding = self.__embedding.embed([sentence])[0]
+            vector = [float(x) for x in sentence_embedding]
+            return self.__client.search(
+                collection_name=self.memory_key,
+                query_vector=vector,
+                limit=self.__limit,
+                score_threshold = self.__score_threshold,
+            )
+        else:
+            return []
 
     def _get_points_by_sentence_list(self, sentence_list: List[str]) -> List[ScoredPoint]:
         scored_points: List[ScoredPoint] = []
@@ -94,11 +98,14 @@ class QdrantMemory(Memory[Message]):
 
     def _get_points_by_message(self, message: Message) -> List[ScoredPoint]:
         if isinstance(message["content"], str):
-            sentence_list = [message["content"]]
+            if message["content"]:
+                sentence_list = [message["content"]]
+            else:
+                sentence_list = []
         else:
             sentence_list = []
             for content in message["content"]:
-                if content["type"] == "text":
+                if content["type"] == "text" and content["text"]:
                     sentence_list.append(content["text"])
         return self._get_points_by_sentence_list(sentence_list)
 

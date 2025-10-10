@@ -36,7 +36,8 @@ class Meta(ConversationAgent):
         toolkit: Toolkit = None,
         retriever: Retriever = None,
         input_key: str = "__input__",
-        output_key: str = "__output__"
+        output_key: str = "__output__",
+        max_loop: int = 5
     ) -> None:
         assert isinstance(model, OpenAIChat), "Unsupported model type"
 
@@ -61,7 +62,8 @@ class Meta(ConversationAgent):
             memory = memory,
             retriever = retriever,
             input_key = input_key,
-            output_key = output_key
+            output_key = output_key,
+            max_loop=max_loop
         )
 
     def predict(self, **kwargs: Any) -> Union[Any, Generator[Any, None, None]]:
