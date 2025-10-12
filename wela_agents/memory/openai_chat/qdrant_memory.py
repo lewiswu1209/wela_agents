@@ -53,7 +53,10 @@ class QdrantMemory(Memory[Message]):
             "message": context
         }
         if isinstance(context["content"], str):
-            sentences = [context["content"]]
+            if context["content"]:
+                sentences = [context["content"]]
+            else:
+                sentences = []
         else:
             sentences = []
             for content in context["content"]:
