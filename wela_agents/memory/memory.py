@@ -18,11 +18,11 @@ class Memory(ABC, Generic[T]):
         return self.__memory_key
 
     @abstractmethod
-    def save_context(self, context: T) -> Any:
+    def save_content(self, content: T) -> Any:
         pass
 
     @abstractmethod
-    def get_contexts(self, contexts: List[T]) -> List[T]:
+    def get_contents(self, contents: List[T]) -> List[T]:
         pass
 
     @abstractmethod

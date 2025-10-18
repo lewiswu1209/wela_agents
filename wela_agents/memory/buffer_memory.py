@@ -12,10 +12,10 @@ class BufferMemory(Memory[T]):
         super().__init__(memory_key)
         self._buffer: List[T] = []
 
-    def save_context(self, context: T) -> None:
-        self._buffer.append(context)
+    def save_content(self, content: T) -> None:
+        self._buffer.append(content)
 
-    def get_contexts(self, _: List[T]) -> List[T]:
+    def get_contents(self, _: List[T]) -> List[T]:
         return self._buffer
 
     def reset_memory(self) -> None:

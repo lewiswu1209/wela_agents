@@ -11,9 +11,9 @@ class WindowBufferMemory(BufferMemory[T]):
         super().__init__(memory_key)
         self._window_size: int = window_size
 
-    def save_context(self, context: T) -> None:
-        buffer = self.get_contexts(None)
-        buffer.append(context)
+    def save_content(self, content: T) -> None:
+        buffer = self.get_contents(None)
+        buffer.append(content)
         self._buffer = buffer[-self._window_size:]
 
 __all__ = [

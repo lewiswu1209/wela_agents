@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
 	setup(
 		name = "wela_agents",
-		version = "0.0.17",
+		version = "0.0.18",
 		packages = find_packages(),
 		install_requires = requirements,
 		description="An agent framework for Wela",
