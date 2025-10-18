@@ -22,25 +22,25 @@ class QdrantMemory(Memory[T]):
 
     def __init__(self,
         memory_key: str,
-        reranker: Reranker,
-        get_text: Callable[[T], str],
         embedding: Embedding,
+        reranker: Reranker,
         qdrant_client: QdrantClient,
+        get_text: Callable[[T], str],
         vector_size = 512,
-        limit: int=10,
         score_threshold: Optional[float] = None,
-        windows_size = 10
+        limit: int=10,
+        window_size = 10
     ) -> None:
         super().__init__(memory_key)
-        self.__get_text = get_text
         self.__embedding = embedding
+        self.__reranker = reranker
+        self.__client: QdrantClient = qdrant_client
+        self.__get_text = get_text
+        self.__vector_size = vector_size
         self.__score_threshold: Optional[float] = score_threshold
         self.__limit: int = limit
-        self.__client: QdrantClient = qdrant_client
-        self.__embedding = embedding
-        self.__vector_size = vector_size
-        self.__window_size = windows_size
-        self.__reranker = reranker
+        self.__window_size = window_size
+
         if not self.__client.collection_exists(collection_name=self.memory_key):
             self.__client.create_collection(
                 collection_name=self.memory_key,
@@ -80,7 +80,7 @@ class QdrantMemory(Memory[T]):
                         results.append(item)
 
         saved_memory_count = self.__client.count(collection_name=self.memory_key).count
-        latest_ids = list(range(saved_memory_count - self.__window_size, saved_memory_count))
+        latest_ids = list(range(0, saved_memory_count))[-self.__window_size:]
         records: List[Record] = self.__client.retrieve(
             collection_name=self.memory_key,
             ids=latest_ids
